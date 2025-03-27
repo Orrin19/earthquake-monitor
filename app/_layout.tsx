@@ -1,39 +1,54 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { Link } from 'expo-router';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-import { useColorScheme } from '@/hooks/useColorScheme';
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+const CenterTitle = ({ title }: { title: string }) => (
+  <View style={styles.titleContainer}>
+    <Text style={styles.titleText}>{title}</Text>
+  </View>
+);
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
-
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
-  if (!loaded) {
-    return null;
-  }
-
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
+        <Stack.Screen
+          name="index"
+          options={{
+            headerTitle: () => <CenterTitle title="Монитор землетрясений" />,
+            headerLeft: () => (
+              <Link href="/menu">
+                <Ionicons name="menu" size={24} color="black" />
+              </Link>
+            ),
+          }}
+        />
+        <Stack.Screen
+          name="menu"
+          options={{
+            headerTitle: () => <CenterTitle title="Меню" />,
+            headerLeft: () => (
+              <Link href="/">
+                <Ionicons name="arrow-back" size={24} color="black" />
+              </Link>
+            ),
+          }}
+        />
       </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }
+
+const styles = StyleSheet.create({
+  titleContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  titleText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+});
