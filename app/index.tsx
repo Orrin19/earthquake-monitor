@@ -91,6 +91,7 @@ export default function HomeScreen() {
             key={quake.id}
             coordinate={quake.coordinates}
             onPress={() => handleMarkerPress(quake)}
+            anchor={{ x: 0.5, y: 0.5 }}
           >
             <View
               style={[
@@ -120,11 +121,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#3498db',
     width: 40,
     height: 40,
-    borderRadius: 20,
-    borderWidth: 2,
+    borderRadius: 24,
+    borderWidth: 3,
     borderColor: 'white',
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
   },
   selectedMarker: {
     backgroundColor: '#f39c12',
@@ -132,6 +138,8 @@ const styles = StyleSheet.create({
   markerText: {
     color: 'white',
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: 14,
+    textAlign: 'center',
+    includeFontPadding: false,
   },
 });

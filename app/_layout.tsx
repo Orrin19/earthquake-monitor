@@ -13,27 +13,33 @@ const CenterTitle = ({ title }: { title: string }) => (
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <Stack>
+      <Stack
+        screenOptions={{
+          headerLeft: ({ canGoBack }) => (
+            <View style={styles.headerButtonContainer}>
+              {canGoBack ? (
+                <Link href=".." style={styles.headerButton}>
+                  <Ionicons name="arrow-back" size={24} color="black" />
+                </Link>
+              ) : (
+                <Link href="/menu" style={styles.headerButton}>
+                  <Ionicons name="menu" size={24} color="black" />
+                </Link>
+              )}
+            </View>
+          ),
+        }}
+      >
         <Stack.Screen
           name="index"
           options={{
             headerTitle: () => <CenterTitle title="Монитор землетрясений" />,
-            headerLeft: () => (
-              <Link href="/menu">
-                <Ionicons name="menu" size={24} color="black" />
-              </Link>
-            ),
           }}
         />
         <Stack.Screen
           name="menu"
           options={{
             headerTitle: () => <CenterTitle title="Меню" />,
-            headerLeft: () => (
-              <Link href="/">
-                <Ionicons name="arrow-back" size={24} color="black" />
-              </Link>
-            ),
           }}
         />
       </Stack>
@@ -50,5 +56,15 @@ const styles = StyleSheet.create({
   titleText: {
     fontSize: 24,
     fontWeight: 'bold',
+  },
+  headerButtonContainer: {
+    marginLeft: 16,
+    width: 48,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerButton: {
+    padding: 12,
   },
 });
