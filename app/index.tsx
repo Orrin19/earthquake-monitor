@@ -11,6 +11,7 @@ interface Earthquake {
   magnitude: number;
   depth: number;
   time: string;
+  starred: boolean;
   notes?: string;
 }
 
@@ -27,6 +28,7 @@ export default function HomeScreen() {
       magnitude: 5.5,
       depth: 50,
       time: '27.02.2025 03:57:10 (Asia/Krasnoyarsk)',
+      starred: true,
       notes: 'Сильное землетрясение',
     },
     {
@@ -36,6 +38,7 @@ export default function HomeScreen() {
       magnitude: 3.1,
       depth: 30,
       time: '27.02.2025 05:23:45 (Asia/Krasnoyarsk)',
+      starred: false,
     },
   ];
 
@@ -118,19 +121,17 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   map: { flex: 1 },
   marker: {
-    backgroundColor: '#3498db',
-    width: 40,
-    height: 40,
-    borderRadius: 24,
+    backgroundColor: '#db3434',
+    width: 30,
+    height: 30,
+    borderRadius: '50%',
     borderWidth: 3,
     borderColor: 'white',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
     elevation: 5,
+    aspectRatio: 1,
+    overflow: 'visible',
   },
   selectedMarker: {
     backgroundColor: '#f39c12',
@@ -138,7 +139,7 @@ const styles = StyleSheet.create({
   markerText: {
     color: 'white',
     fontWeight: 'bold',
-    fontSize: 14,
+    fontSize: 12,
     textAlign: 'center',
     includeFontPadding: false,
   },

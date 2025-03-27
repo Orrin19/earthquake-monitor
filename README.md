@@ -25,5 +25,5 @@
 5. Run a build.
 
    ```bash
-    eas build --platform android
+    eas build -p android --profile preview
    ```

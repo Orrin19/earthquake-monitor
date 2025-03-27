@@ -1,4 +1,11 @@
-import { View, Text, StyleSheet, TextInput } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+} from 'react-native';
 
 interface EarthquakeInfoProps {
   earthquake: {
@@ -7,6 +14,7 @@ interface EarthquakeInfoProps {
     magnitude: number;
     depth: number;
     time: string;
+    starred: boolean;
     notes?: string;
   };
 }
@@ -17,6 +25,18 @@ export default function EarthquakeInfo({ earthquake }: EarthquakeInfoProps) {
   };
   return (
     <View style={styles.container}>
+      <TouchableOpacity
+        style={styles.star}
+        onPress={() => {
+          earthquake.starred = !earthquake.starred;
+        }}
+      >
+        <Ionicons
+          name={earthquake.starred ? 'star' : 'star-outline'}
+          size={24}
+          color="black"
+        />
+      </TouchableOpacity>
       <View style={styles.detailRow}>
         <Text style={styles.label}>Местоположение</Text>
         <Text style={styles.value}>{earthquake.location}</Text>
@@ -61,6 +81,11 @@ export default function EarthquakeInfo({ earthquake }: EarthquakeInfoProps) {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
+  },
+  star: {
+    position: 'absolute',
+    top: -10,
+    right: 20,
   },
   detailRow: {
     flexDirection: 'row',
