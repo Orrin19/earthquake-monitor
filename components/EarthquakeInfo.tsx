@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,34 +10,71 @@ import {
 
 interface EarthquakeInfoProps {
   earthquake: {
+    id: string;
     location: string;
     coordinates: { latitude: number; longitude: number };
     magnitude: number;
     depth: number;
     time: string;
-    starred: boolean;
+    starred?: boolean;
     notes?: string;
   };
+  onStarToggle: (starred: boolean, notes?: string) => Promise<void>;
+  onNotesChange: (notes: string) => Promise<void>;
 }
 
-export default function EarthquakeInfo({ earthquake }: EarthquakeInfoProps) {
-  const setNotes = (text: string) => {
-    earthquake.notes = text;
+export default function EarthquakeInfo({
+  earthquake,
+  onStarToggle,
+  onNotesChange,
+}: EarthquakeInfoProps) {
+  const [notes, setNotes] = useState(earthquake.notes || '');
+  const [isStarred, setIsStarred] = useState(earthquake.starred || false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    setNotes(earthquake.notes || '');
+    setIsStarred(earthquake.starred || false);
+  }, [earthquake]);
+
+  const handleStarToggle = async () => {
+    setIsLoading(true);
+    try {
+      const newStarredState = !isStarred;
+      await onStarToggle(newStarredState, notes);
+      setIsStarred(newStarredState);
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  const handleNotesChange = async (text: string) => {
+    setNotes(text);
+    if (isStarred) {
+      try {
+        await onNotesChange(text);
+      } catch (error) {
+        console.error('Error updating notes:', error);
+      }
+    }
+  };
+
   return (
     <View style={styles.container}>
       <TouchableOpacity
         style={styles.star}
-        onPress={() => {
-          earthquake.starred = !earthquake.starred;
-        }}
+        onPress={handleStarToggle}
+        disabled={isLoading}
       >
         <Ionicons
-          name={earthquake.starred ? 'star' : 'star-outline'}
+          name={isStarred ? 'star' : 'star-outline'}
           size={24}
-          color="black"
+          color={isStarred ? 'gold' : 'gray'}
         />
       </TouchableOpacity>
+
       <View style={styles.detailRow}>
         <Text style={styles.label}>Местоположение</Text>
         <Text style={styles.value}>{earthquake.location}</Text>
@@ -65,15 +103,20 @@ export default function EarthquakeInfo({ earthquake }: EarthquakeInfoProps) {
         <Text style={styles.value}>{earthquake.time}</Text>
       </View>
 
-      <Text style={styles.label}>Примечание</Text>
-      <TextInput
-        style={styles.notesInput}
-        multiline
-        numberOfLines={4}
-        placeholder="Добавьте свои наблюдения..."
-        value={earthquake.notes}
-        onChangeText={setNotes}
-      />
+      {isStarred && (
+        <>
+          <Text style={styles.label}>Примечание</Text>
+          <TextInput
+            style={styles.notesInput}
+            multiline
+            numberOfLines={4}
+            placeholder="Добавьте свои наблюдения..."
+            value={notes}
+            onChangeText={handleNotesChange}
+            editable={isStarred}
+          />
+        </>
+      )}
     </View>
   );
 }
@@ -115,5 +158,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     minHeight: 100,
     textAlignVertical: 'top',
+  },
+  favoriteMarker: {
+    borderColor: 'gold',
+    borderWidth: 2,
+  },
+  starBadge: {
+    position: 'absolute',
+    top: -5,
+    right: -5,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    borderRadius: 10,
+    padding: 2,
   },
 });

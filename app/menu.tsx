@@ -5,16 +5,19 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getSettings, updateSettings } from '../services/database';
 
 export default function MenuScreen() {
   const [location, setLocation] = useState('Красноярск');
-  const [magnitude, setMagnitude] = useState(5);
-  const [showTimeDropdown, setShowTimeDropdown] = useState(false);
+  const [magnitude, setMagnitude] = useState(3);
   const [selectedTime, setSelectedTime] = useState('24 часа');
+  const [showTimeDropdown, setShowTimeDropdown] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const timeOptions = [
     '1 час',
@@ -24,6 +27,62 @@ export default function MenuScreen() {
     '3 дня',
     '7 дней',
   ];
+
+  // Загрузка настроек из базы данных
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const settings = await getSettings();
+        setMagnitude(settings.min_magnitude);
+        setLocation(settings.location);
+        setSelectedTime(settings.time);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error loading settings:', error);
+        setLoading(false);
+      }
+    };
+
+    loadSettings();
+  }, []);
+
+  // Автосохранение при изменении настроек
+  useEffect(() => {
+    if (!loading) {
+      const saveSettings = async () => {
+        try {
+          await updateSettings({
+            location: location,
+            min_magnitude: magnitude,
+            time: selectedTime,
+          });
+        } catch (error) {
+          console.error('Error saving settings:', error);
+        }
+      };
+
+      const timer = setTimeout(() => {
+        saveSettings();
+      }, 500); // Дебаунс 500 мс
+
+      return () => clearTimeout(timer);
+    }
+  }, [magnitude, location, selectedTime, loading]);
+
+  const handleTimeSelect = (option: string) => {
+    setSelectedTime(option);
+    setShowTimeDropdown(false);
+    // Можно добавить сохранение этого параметра в БД
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" />
+        <Text style={styles.loadingText}>Загрузка настроек...</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container}>
@@ -37,7 +96,7 @@ export default function MenuScreen() {
         </View>
 
         <View style={styles.earthquakeItem}>
-          <Ionicons name="location" size={16} color="#FF3B30" />
+          <Ionicons name="location" size={16} color="#FF9500" />
           <Text style={styles.earthquakeText}>70 км юго-западнее г. Кызыл</Text>
           <Text style={styles.magnitude}>3.1</Text>
         </View>
@@ -77,7 +136,7 @@ export default function MenuScreen() {
           maximumValue={10}
           step={0.1}
           value={magnitude}
-          onSlidingComplete={setMagnitude}
+          onSlidingComplete={(value) => setMagnitude(value)}
           minimumTrackTintColor="#007AFF"
           maximumTrackTintColor="#D1D1D6"
           thumbTintColor="#007AFF"
@@ -106,10 +165,7 @@ export default function MenuScreen() {
               <TouchableOpacity
                 key={option}
                 style={styles.dropdownOption}
-                onPress={() => {
-                  setSelectedTime(option);
-                  setShowTimeDropdown(false);
-                }}
+                onPress={() => handleTimeSelect(option)}
               >
                 <Text
                   style={[
@@ -134,6 +190,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F5F5F5',
     padding: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 16,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#666',
   },
   section: {
     backgroundColor: 'white',
