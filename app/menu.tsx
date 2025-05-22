@@ -6,11 +6,17 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
 import { useState, useEffect } from 'react';
-import { getSettings, updateSettings } from '../services/database';
+import {
+  getFavorites,
+  getSettings,
+  updateSettings,
+} from '../services/database';
+import { fetchEarthquakes } from '@/services/api';
 
 export default function MenuScreen() {
   const [location, setLocation] = useState('Красноярск');
@@ -27,6 +33,26 @@ export default function MenuScreen() {
     '3 дня',
     '7 дней',
   ];
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const settings = await getSettings();
+      const quakes = await fetchEarthquakes(settings);
+      const favorites = await getFavorites();
+      const updatedQuakes = quakes.map((q) => {
+        const fav = favorites.find((f) => f.id === q.id);
+        return fav ? { ...q, starred: true, notes: fav.notes } : q;
+      });
+      fetchEarthquakes(settings);
+    } catch (error) {
+      console.error('Refresh failed:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   // Загрузка настроек из базы данных
   useEffect(() => {
@@ -85,8 +111,13 @@ export default function MenuScreen() {
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.section}>
+    <ScrollView
+      style={styles.container}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+      }
+    >
+      {/* <View style={styles.section}>
         <Text style={styles.sectionTitle}>Недавние землетрясения</Text>
 
         <View style={styles.earthquakeItem}>
@@ -100,7 +131,7 @@ export default function MenuScreen() {
           <Text style={styles.earthquakeText}>70 км юго-западнее г. Кызыл</Text>
           <Text style={styles.magnitude}>3.1</Text>
         </View>
-      </View>
+      </View> */}
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Настройки</Text>
